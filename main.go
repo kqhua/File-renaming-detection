@@ -67,30 +67,6 @@ func gitStatus() []byte {
 	if err != nil {
 		fmt.Printf("cmd.Run() failed with %s\n", err)
 	}
-	//fmt.Printf("combined out:\n%s\n", outString)
-
-	// if ok, _ := re.Match("renamed", out); ok {
-	// 	err = nil
-	// 	fmt.Println("found")
-
-	// 	// f, err := os.OpenFile("data.txt", os.O_APPEND|os.O_WRONLY, os.ModeAppend)
-	// 	// if err != nil {
-	// 	// 	fmt.Println(err.Error())
-	// 	// }
-	// 	// defer f.Close()
-	// 	// _, err2 := f.WriteString(outString)
-
-	// 	// if err2 != nil {
-	// 	// 	fmt.Println(err2.Error())
-	// 	//}
-
-	// 	// temp := strings.Split(outString, "\n")
-
-	// 	// for linenum, line := range temp {
-	// 	// 	fmt.Println(linenum, line)
-	// 	// }
-
-	// }
 	return out
 }
 
