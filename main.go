@@ -196,3 +196,7 @@ func gitRenameDiff() []byte {
 func hey() {
 	fmt.Println("hey")
 }
+
+func heyy() {
+	fmt.Println("heyy")
+}
