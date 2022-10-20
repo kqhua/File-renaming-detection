@@ -45,10 +45,10 @@ func discoverRename() {
 	renamedLine := re.MustCompile(`(renamed.*?)(?:\r|\n|\r\n)`)
 	found := renamedLine.Find(out)
 	if found != nil {
-
 		fmt.Printf("Discovered line: %q \n", found)
 		printRenameDiscovery(string(found))
-
+	} else {
+		fmt.Println("File renamed not detected. Files differed too much")
 	}
 	fmt.Println("Running git reset")
 	fmt.Println()
@@ -89,7 +89,6 @@ func gitAdd() {
 	if err != nil {
 		fmt.Printf("cmd.Run() failed with %s\n", err)
 	}
-	//fmt.Printf("combined out:\n%s\n", string(out))
 }
 
 func gitReset() {
@@ -98,5 +97,4 @@ func gitReset() {
 	if err != nil {
 		fmt.Printf("cmd.Run() failed with %s\n", err)
 	}
-	//fmt.Printf("combined out:\n%s\n", string(out))
 }
