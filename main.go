@@ -17,7 +17,7 @@ func main() {
 
 	//renameFile(filename, newName)
 
-	discoverModified()
+	discoverRename()
 
 }
 
@@ -70,28 +70,40 @@ func gitStatus() []byte {
 	return out
 }
 
+func gitAdd() {
+	cmd := exec.Command("git", "add", ".")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("cmd.Run() failed with %s\n", err)
+	}
+	fmt.Printf("combined out:\n%s\n", string(out))
+}
+
+func gitReset() {
+	cmd := exec.Command("git", "reset")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("cmd.Run() failed with %s\n", err)
+	}
+	fmt.Printf("combined out:\n%s\n", string(out))
+}
+
 func discoverRename() {
+	gitAdd()
 	out := gitStatus()
-
 	renamedLine := re.MustCompile(`(renamed.*?)(?:\r|\n|\r\n)`)
-
 	found := renamedLine.Find(out)
-
 	if found != nil {
 		fmt.Printf("%q\n", found)
 	}
-
+	gitReset()
 }
 
 func discoverModified() {
 	out := gitStatus()
-
 	renamedLine := re.MustCompile(`(modified.*?)(?:\r|\n|\r\n)`)
-
 	found := renamedLine.FindAll(out, -1)
-
 	if found != nil {
 		fmt.Printf("%q\n", found)
 	}
-
 }
