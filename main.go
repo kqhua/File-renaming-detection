@@ -183,3 +183,12 @@ func gitUndoCommit() {
 		fmt.Printf("cmd.Run() failed with %s\n", err)
 	}
 }
+
+func gitRenameDiff() []byte {
+	cmd := exec.Command("git", "diff", " --diff-filter=R", "main")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("cmd.Run() failed with %s\n", err)
+	}
+	return out
+}
