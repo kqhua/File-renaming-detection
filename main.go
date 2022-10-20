@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	re "regexp"
 	"strings"
 )
 
 func main() {
-	testRenameDiscovery()
+	testMoveDiscovery()
+	//testRenameDiscovery()
 }
 
 // Test Functions
@@ -25,6 +27,21 @@ func testRenameDiscovery() {
 	renameFile(newName, ogName)
 }
 
+func testMoveDiscovery() {
+	fmt.Println("Testing moving a file and detecting change")
+	fmt.Println()
+	ogName := "first_name.txt"
+	moveFile(ogName, true)
+	discoverMove()
+	fmt.Println("Adding and making a test commit to save movement changes")
+	gitAdd()
+	gitCommit()
+	moveFile(ogName, false)
+	discoverMove()
+	fmt.Println("Undoing test commit")
+	gitUndoCommit()
+}
+
 // Util Functions
 
 // renameFile is a wrapper function to rename a file
@@ -32,6 +49,26 @@ func renameFile(fileName string, newName string) {
 	fmt.Println("Renaming " + fileName + " to " + newName)
 	fmt.Println()
 	err := os.Rename(fileName, newName)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+}
+
+// moveFile is a wrapper function to move a file in/out of the move folder
+func moveFile(fileName string, in bool) {
+	var first, second string
+	move_path := filepath.Join("move", fileName)
+	if in {
+		fmt.Println("Moving " + fileName + " into move")
+		first = fileName
+		second = move_path
+	} else {
+		fmt.Println("Moving " + fileName + " out of move")
+		first = move_path
+		second = fileName
+	}
+	fmt.Println()
+	err := os.Rename(first, second)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -55,6 +92,24 @@ func discoverRename() {
 	gitReset()
 }
 
+func discoverMove() {
+	fmt.Println("Running git add")
+	gitAdd()
+	out := gitStatus()
+	renamedLine := re.MustCompile(`(renamed.*?)(?:\r|\n|\r\n)`)
+	found := renamedLine.Find(out)
+	if found != nil {
+		fmt.Printf("Discovered line: %q \n", found)
+		printMoveDiscovery(string(found))
+	} else {
+		fmt.Println("File renamed not detected.")
+	}
+	fmt.Println("Running git reset")
+	fmt.Println()
+	gitReset()
+
+}
+
 func printRenameDiscovery(renameLine string) {
 	words := strings.Fields(renameLine)
 	ogFilename := words[1]
@@ -62,6 +117,20 @@ func printRenameDiscovery(renameLine string) {
 
 	fmt.Println("Old name:", ogFilename)
 	fmt.Println("New name:", newFilename)
+}
+
+func printMoveDiscovery(renameLine string) {
+	words := strings.Fields(renameLine)
+	ogFilename := words[1]
+	newFilename := words[3]
+
+	if strings.Contains(newFilename, "move/") {
+		fmt.Println(ogFilename, "was moved into the move directory")
+	}
+
+	if strings.Contains(ogFilename, "move/") {
+		fmt.Println(newFilename, "was moved out of the move directory")
+	}
 }
 
 func discoverModified() {
@@ -93,6 +162,22 @@ func gitAdd() {
 
 func gitReset() {
 	cmd := exec.Command("git", "reset")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("cmd.Run() failed with %s\n", err)
+	}
+}
+
+func gitCommit() {
+	cmd := exec.Command("git", "commit", "-m", "'test_commit' ")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("cmd.Run() failed with %s\n", err)
+	}
+}
+
+func gitUndoCommit() {
+	cmd := exec.Command("git", "reset", "HEAD~")
 	_, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("cmd.Run() failed with %s\n", err)
