@@ -192,3 +192,7 @@ func gitRenameDiff() []byte {
 	}
 	return out
 }
+
+func hey() {
+	fmt.Println("hey")
+}
