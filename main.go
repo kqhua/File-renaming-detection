@@ -10,8 +10,11 @@ import (
 )
 
 func main() {
-	testMoveDiscovery()
+	//testMoveDiscovery()
 	//testRenameDiscovery()
+	// out := gitRenameDiff("rename-test")
+	// fmt.Println(string(out))
+	discoverDiff()
 }
 
 // Test Functions
@@ -110,6 +113,26 @@ func discoverMove() {
 
 }
 
+func discoverDiff() {
+	fmt.Println("Running git add")
+	gitAdd()
+	out := gitRenameDiff("rename-test")
+	renameFrom := re.MustCompile(`(rename from.*?)(?:\r|\n|\r\n)`)
+	foundFrom := renameFrom.FindAll(out, -1)
+	renameTo := re.MustCompile(`(rename to.*?)(?:\r|\n|\r\n)`)
+	foundTo := renameTo.FindAll(out, -1)
+	if foundFrom != nil {
+		fmt.Printf("%q\n", foundFrom)
+		fmt.Printf("%q\n", foundTo)
+	} else {
+		fmt.Println("File renamed not detected.")
+	}
+	fmt.Println("Running git reset")
+	fmt.Println()
+	gitReset()
+
+}
+
 func printRenameDiscovery(renameLine string) {
 	words := strings.Fields(renameLine)
 	ogFilename := words[1]
@@ -184,8 +207,8 @@ func gitUndoCommit() {
 	}
 }
 
-func gitRenameDiff() []byte {
-	cmd := exec.Command("git", "diff", " --diff-filter=R", "main")
+func gitRenameDiff(branch string) []byte {
+	cmd := exec.Command("git", "diff", "--diff-filter=R", branch)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("cmd.Run() failed with %s\n", err)
