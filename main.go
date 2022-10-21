@@ -124,6 +124,7 @@ func discoverDiff() {
 	if foundFrom != nil {
 		fmt.Printf("%q\n", foundFrom)
 		fmt.Printf("%q\n", foundTo)
+		printDiffDiscovery(foundFrom, foundTo)
 	} else {
 		fmt.Println("File renamed not detected.")
 	}
@@ -154,6 +155,22 @@ func printMoveDiscovery(renameLine string) {
 	if strings.Contains(ogFilename, "move/") {
 		fmt.Println(newFilename, "was moved out of the move directory")
 	}
+}
+
+func printDiffDiscovery(froms [][]byte, tos [][]byte) {
+	var filtered_froms []string
+	var filtered_tos []string
+
+	for i, _ := range froms {
+		from := strings.Fields(string(froms[i]))[2]
+		to := strings.Fields(string(tos[i]))[2]
+
+		filtered_froms = append(filtered_froms, from)
+		filtered_tos = append(filtered_tos, to)
+	}
+
+	fmt.Println(filtered_froms)
+	fmt.Println(filtered_tos)
 }
 
 func discoverModified() {
