@@ -1,2 +1,2 @@
 linux/arm64
-linux/amd4
+linux/amd64
