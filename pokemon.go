@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,9 +13,68 @@ import (
 func main() {
 	//testMoveDiscovery()
 	//testRenameDiscovery()
-	out := gitRenameDiff("rename-test")
-	fmt.Println(string(out))
+	// out := gitRenameDiff("rename-test")
+	// fmt.Println(string(out))
 	discoverDiff()
+}
+
+// Diff functions
+
+func parseDiffDiscovery(diffs [][]byte) ([]string, []string) {
+	var filtered_froms []string
+	var filtered_tos []string
+
+	for i, _ := range diffs {
+		currDiff := string(diffs[i])
+		currDiffList := strings.Fields(currDiff)
+		from := currDiffList[2][2:]
+		to := currDiffList[3][2:]
+
+		filtered_froms = append(filtered_froms, from)
+		filtered_tos = append(filtered_tos, to)
+	}
+
+	return filtered_froms, filtered_tos
+}
+
+func discoverDiff() {
+	fmt.Println("Running git add")
+	gitAdd()
+	out := gitRenameDiff("rename-test")
+	diffLines := re.MustCompile(`(diff --git a/.* b/.*)(?:\r|\n|\r\n)`)
+	found := diffLines.FindAll(out, -1)
+
+	if found != nil {
+		parseDiffDiscovery(found)
+	} else {
+		fmt.Println("File renamed not detected.")
+	}
+	fmt.Println("Running git reset")
+	fmt.Println()
+	gitReset()
+}
+
+// Check if a given image is multi-arch
+func checkMultiArch(image string) bool {
+	// Check if image has a platforms.txt file
+	file, err := os.Open(fmt.Sprintf("%s/%s", image, "platforms.txt"))
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	platformFileRaw, err := io.ReadAll(file)
+	if err != nil {
+		return false
+	}
+	platformFile := string(platformFileRaw)
+
+	// Check the file contains both AMD and ARM platforms
+	if strings.Contains(platformFile, "linux/amd64") && strings.Contains(platformFile, "linux/arm64") {
+		return true
+	}
+
+	return false
 }
 
 // Test Functions
@@ -113,23 +173,6 @@ func discoverMove() {
 
 }
 
-func discoverDiff() {
-	fmt.Println("Running git add")
-	gitAdd()
-	out := gitRenameDiff("rename-test")
-	diffLines := re.MustCompile(`(diff --git a/.* b/.*)(?:\r|\n|\r\n)`)
-	found := diffLines.FindAll(out, -1)
-
-	if found != nil {
-		printDiffDiscovery(found)
-	} else {
-		fmt.Println("File renamed not detected.")
-	}
-	fmt.Println("Running git reset")
-	fmt.Println()
-	gitReset()
-}
-
 func printRenameDiscovery(renameLine string) {
 	words := strings.Fields(renameLine)
 	ogFilename := words[1]
@@ -151,24 +194,6 @@ func printMoveDiscovery(renameLine string) {
 	if strings.Contains(ogFilename, "move/") {
 		fmt.Println(newFilename, "was moved out of the move directory")
 	}
-}
-
-func printDiffDiscovery(diffs [][]byte) {
-	var filtered_froms []string
-	var filtered_tos []string
-
-	for i, _ := range diffs {
-		currDiff := string(diffs[i])
-		currDiffList := strings.Fields(currDiff)
-		from := currDiffList[2][:2]
-		to := currDiffList[3][:2]
-
-		filtered_froms = append(filtered_froms, from)
-		filtered_tos = append(filtered_tos, to)
-	}
-
-	fmt.Println(filtered_froms)
-	fmt.Println(filtered_tos)
 }
 
 func discoverModified() {
@@ -238,3 +263,22 @@ func hey() {
 func heyy() {
 	fmt.Println("heyy")
 }
+
+// func makeFile(fileName string) {
+// 	f, err := os.Create(fileName)
+
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 	}
+
+// 	defer f.Close()
+
+// 	_, err2 := f.WriteString("old falcon\n")
+
+// 	if err2 != nil {
+// 		fmt.Println(err2.Error())
+// 	}
+
+// 	fmt.Println("done")
+
+// }
