@@ -62,7 +62,7 @@ func discoverDiff() {
 func findDiff() ([]string, []string) {
 	fmt.Println("Running git add")
 	gitAdd()
-	out := gitRenameDiff("rename-test")
+	out := gitRenameDiff("main")
 	diffLines := re.MustCompile(`(diff --git a/.* b/.*)(?:\r|\n|\r\n)`)
 	found := diffLines.FindAll(out, -1)
 	var ogNames, newNames []string
