@@ -10,3 +10,4 @@ Changes not staged for commit:
 	modified:   .DS_Store
 	modified:   main.go
 
+linux/amd64
