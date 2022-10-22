@@ -122,8 +122,6 @@ func discoverDiff() {
 	renameTo := re.MustCompile(`(rename to.*?)(?:\r|\n|\r\n)`)
 	foundTo := renameTo.FindAll(out, -1)
 	if foundFrom != nil {
-		fmt.Printf("%q\n", foundFrom)
-		fmt.Printf("%q\n", foundTo)
 		printDiffDiscovery(foundFrom, foundTo)
 	} else {
 		fmt.Println("File renamed not detected.")
