@@ -12,8 +12,8 @@ import (
 func main() {
 	//testMoveDiscovery()
 	//testRenameDiscovery()
-	out := gitRenameDiff("rename-test")
-	fmt.Println(string(out))
+	// out := gitRenameDiff("rename-test")
+	// fmt.Println(string(out))
 	discoverDiff()
 }
 
@@ -153,15 +153,15 @@ func printMoveDiscovery(renameLine string) {
 	}
 }
 
-func printDiffDiscovery(diffs [][]byte) {
+func printDiffDiscovery(diffs [][]byte) ([]string, []string) {
 	var filtered_froms []string
 	var filtered_tos []string
 
 	for i, _ := range diffs {
 		currDiff := string(diffs[i])
 		currDiffList := strings.Fields(currDiff)
-		from := currDiffList[2][:2]
-		to := currDiffList[3][:2]
+		from := currDiffList[2][2:]
+		to := currDiffList[3][2:]
 
 		filtered_froms = append(filtered_froms, from)
 		filtered_tos = append(filtered_tos, to)
@@ -169,6 +169,8 @@ func printDiffDiscovery(diffs [][]byte) {
 
 	fmt.Println(filtered_froms)
 	fmt.Println(filtered_tos)
+
+	return filtered_froms, filtered_tos
 }
 
 func discoverModified() {
