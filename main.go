@@ -12,8 +12,8 @@ import (
 func main() {
 	//testMoveDiscovery()
 	//testRenameDiscovery()
-	// out := gitRenameDiff("rename-test")
-	// fmt.Println(string(out))
+	out := gitRenameDiff("rename-test")
+	fmt.Println(string(out))
 	discoverDiff()
 }
 
@@ -117,19 +117,17 @@ func discoverDiff() {
 	fmt.Println("Running git add")
 	gitAdd()
 	out := gitRenameDiff("rename-test")
-	renameFrom := re.MustCompile(`(rename from.*?)(?:\r|\n|\r\n)`)
-	foundFrom := renameFrom.FindAll(out, -1)
-	renameTo := re.MustCompile(`(rename to.*?)(?:\r|\n|\r\n)`)
-	foundTo := renameTo.FindAll(out, -1)
-	if foundFrom != nil {
-		printDiffDiscovery(foundFrom, foundTo)
+	diffLines := re.MustCompile(`(diff --git a/.* b/.*)(?:\r|\n|\r\n)`)
+	found := diffLines.FindAll(out, -1)
+
+	if found != nil {
+		printDiffDiscovery(found)
 	} else {
 		fmt.Println("File renamed not detected.")
 	}
 	fmt.Println("Running git reset")
 	fmt.Println()
 	gitReset()
-
 }
 
 func printRenameDiscovery(renameLine string) {
@@ -155,13 +153,15 @@ func printMoveDiscovery(renameLine string) {
 	}
 }
 
-func printDiffDiscovery(froms [][]byte, tos [][]byte) {
+func printDiffDiscovery(diffs [][]byte) {
 	var filtered_froms []string
 	var filtered_tos []string
 
-	for i, _ := range froms {
-		from := strings.Fields(string(froms[i]))[2]
-		to := strings.Fields(string(tos[i]))[2]
+	for i, _ := range diffs {
+		currDiff := string(diffs[i])
+		currDiffList := strings.Fields(currDiff)
+		from := currDiffList[2][:2]
+		to := currDiffList[3][:2]
 
 		filtered_froms = append(filtered_froms, from)
 		filtered_tos = append(filtered_tos, to)
