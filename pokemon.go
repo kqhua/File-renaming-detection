@@ -34,6 +34,8 @@ func parseDiffDiscovery(diffs [][]byte) ([]string, []string) {
 		filtered_tos = append(filtered_tos, to)
 	}
 
+	fmt.Println(filtered_froms)
+	fmt.Println(filtered_tos)
 	return filtered_froms, filtered_tos
 }
 
@@ -54,8 +56,54 @@ func discoverDiff() {
 	gitReset()
 }
 
+func findDiff() ([]string, []string) {
+	fmt.Println("Running git add")
+	gitAdd()
+	out := gitRenameDiff("rename-test")
+	diffLines := re.MustCompile(`(diff --git a/.* b/.*)(?:\r|\n|\r\n)`)
+	found := diffLines.FindAll(out, -1)
+	var ogNames, newNames []string
+	if found != nil {
+		ogNames, newNames = parseDiffDiscovery(found)
+	} else {
+		fmt.Println("File renamed not detected.")
+	}
+	fmt.Println("Running git reset")
+	fmt.Println()
+	gitReset()
+	return ogNames, newNames
+}
+
+func findInArray(names []string, target string) int {
+	for i, name := range names {
+		if name == target {
+			return i
+		}
+	}
+	return -1
+}
+
+func checkRename(image string) string {
+	ogNames, newNames := findDiff()
+	if ogNames == nil && newNames == nil {
+		return ""
+	}
+
+	namePos := findInArray(ogNames, image)
+	if namePos == -1 {
+		return ""
+	}
+
+	return newNames[namePos]
+}
+
 // Check if a given image is multi-arch
 func checkMultiArch(image string) bool {
+	//check image has been renamed
+	newName := checkRename(image)
+	if newName != "" {
+		image = newName
+	}
 	// Check if image has a platforms.txt file
 	file, err := os.Open(fmt.Sprintf("%s/%s", image, "platforms.txt"))
 	if err != nil {
