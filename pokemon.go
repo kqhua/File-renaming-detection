@@ -15,7 +15,10 @@ func main() {
 	//testRenameDiscovery()
 	// out := gitRenameDiff("rename-test")
 	// fmt.Println(string(out))
-	discoverDiff()
+	//discoverDiff()
+
+	multi := checkMultiArch("platforms.txt")
+	fmt.Println(multi)
 }
 
 // Diff functions
@@ -76,7 +79,8 @@ func findDiff() ([]string, []string) {
 
 func findInArray(names []string, target string) int {
 	for i, name := range names {
-		if name == target {
+		fmt.Println("looking for", target, "in", name)
+		if strings.Contains(name, target) {
 			return i
 		}
 	}
@@ -86,26 +90,29 @@ func findInArray(names []string, target string) int {
 func checkRename(image string) string {
 	ogNames, newNames := findDiff()
 	if ogNames == nil && newNames == nil {
+		fmt.Println("No diff found")
 		return ""
 	}
 
-	namePos := findInArray(ogNames, image)
+	//use ognames if comapring branch to main, newNames if main to branch
+	namePos := findInArray(newNames, image)
 	if namePos == -1 {
+		fmt.Println("couldn't find ogName")
 		return ""
 	}
 
 	return newNames[namePos]
 }
 
-// Check if a given image is multi-arch
+// Check if a given image is multi-arch image string will be "platform.txt" as funcitons will detect the folder rename and txt movement
 func checkMultiArch(image string) bool {
 	//check image has been renamed
 	newName := checkRename(image)
+	fmt.Println(newName)
 	if newName != "" {
 		image = newName
 	}
-	// Check if image has a platforms.txt file
-	file, err := os.Open(fmt.Sprintf("%s/%s", image, "platforms.txt"))
+	file, err := os.Open(image)
 	if err != nil {
 		return false
 	}
@@ -116,7 +123,7 @@ func checkMultiArch(image string) bool {
 		return false
 	}
 	platformFile := string(platformFileRaw)
-
+	fmt.Println(platformFile)
 	// Check the file contains both AMD and ARM platforms
 	if strings.Contains(platformFile, "linux/amd64") && strings.Contains(platformFile, "linux/arm64") {
 		return true
