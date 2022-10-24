@@ -29,6 +29,7 @@ func parseDiffDiscovery(diffs [][]byte) ([]string, []string) {
 
 	for i, _ := range diffs {
 		currDiff := string(diffs[i])
+		fmt.Println(currDiff)
 		currDiffList := strings.Fields(currDiff)
 		from := currDiffList[2][2:]
 		to := currDiffList[3][2:]
@@ -79,7 +80,7 @@ func findDiff() ([]string, []string) {
 
 func findInArray(names []string, target string) int {
 	for i, name := range names {
-		fmt.Println("looking for", target, "in", name)
+		//fmt.Println("looking for", target, "in", name)
 		if strings.Contains(name, target) {
 			return i
 		}
@@ -123,7 +124,7 @@ func checkMultiArch(image string) bool {
 		return false
 	}
 	platformFile := string(platformFileRaw)
-	fmt.Println(platformFile)
+	//fmt.Println(platformFile)
 	// Check the file contains both AMD and ARM platforms
 	if strings.Contains(platformFile, "linux/amd64") && strings.Contains(platformFile, "linux/arm64") {
 		return true
@@ -310,22 +311,3 @@ func gitRenameDiff(branch string) []byte {
 	}
 	return out
 }
-
-// func makeFile(fileName string) {
-// 	f, err := os.Create(fileName)
-
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
-
-// 	defer f.Close()
-
-// 	_, err2 := f.WriteString("old falcon\n")
-
-// 	if err2 != nil {
-// 		fmt.Println(err2.Error())
-// 	}
-
-// 	fmt.Println("done")
-
-// }
