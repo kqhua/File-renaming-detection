@@ -5,12 +5,13 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	re "regexp"
 	"strings"
 )
 
 func main() {
-	multi := checkMultiArch("test_image")
+	multi := checkMultiArch("test-multi-arch/tag")
 	fmt.Println(multi)
 }
 
@@ -57,7 +58,6 @@ func findDiff() ([]string, []string) {
 
 func findInArray(names []string, target string) int {
 	for i, name := range names {
-		//fmt.Println("looking for", target, "in", name)
 		if strings.Contains(name, target) {
 			return i
 		}
@@ -82,8 +82,16 @@ func checkRename(image string) string {
 	return newNames[namePos]
 }
 
-// Check if a given image is multi-arch image string will be "platform.txt" as funcitons will detect the folder rename and txt movement
+// Check if a given image is multi-arch image string will be "etc/etc/platform.txt" as funcitons will detect the folder rename and txt movement
 func checkMultiArch(image string) bool {
+	platform_path := filepath.Join(image, "platforms.txt")
+
+	filet, errt := os.Open(platform_path)
+	if errt != nil {
+		fmt.Println("Cannot find", platform_path)
+	}
+	defer filet.Close()
+
 	//check image has been renamed
 	newName := checkRename(image)
 	fmt.Println(newName)
