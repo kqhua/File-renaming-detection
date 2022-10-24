@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	multi := checkMultiArch("platforms.txt")
+	multi := checkMultiArch("test_image")
 	fmt.Println(multi)
 }
 
@@ -73,7 +73,7 @@ func checkRename(image string) string {
 	}
 
 	//use ognames if comapring branch to main, newNames if main to branch
-	namePos := findInArray(newNames, image)
+	namePos := findInArray(ogNames, image)
 	if namePos == -1 {
 		fmt.Println("couldn't find ogName")
 		return ""
