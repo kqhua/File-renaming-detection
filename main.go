@@ -38,10 +38,7 @@ func parseDiffDiscovery(diffs [][]byte) ([]string, []string) {
 }
 
 func findDiff() ([]string, []string) {
-	fmt.Println("Running git add")
-	gitAdd()
 	out := gitRenameDiff("main")
-	//fmt.Println(string(out))
 	diffLines := re.MustCompile(`(diff --git a/.* b/.*)(?:\r|\n|\r\n)`)
 	found := diffLines.FindAll(out, -1)
 	var ogNames, newNames []string
@@ -50,15 +47,12 @@ func findDiff() ([]string, []string) {
 	} else {
 		fmt.Println("File renamed not detected.")
 	}
-	fmt.Println("Running git reset")
-	fmt.Println()
-	gitReset()
 	return ogNames, newNames
 }
 
 func findInArray(names []string, target string) int {
 	for i, name := range names {
-		if strings.Contains(name, target) {
+		if target == name {
 			return i
 		}
 	}
@@ -69,17 +63,17 @@ func checkRename(image string) string {
 	ogNames, newNames := findDiff()
 	if ogNames == nil && newNames == nil {
 		fmt.Println("No diff found")
-		return ""
+		return filepath.Dir(image)
 	}
-
 	//use ognames if comapring branch to main, newNames if main to branch
 	namePos := findInArray(ogNames, image)
 	if namePos == -1 {
 		fmt.Println("couldn't find ogName")
-		return ""
+		return filepath.Dir(image)
 	}
 
-	return newNames[namePos]
+	//return the renamed directory
+	return filepath.Dir(newNames[namePos])
 }
 
 // Check if a given image is multi-arch image string will be "etc/etc/platform.txt" as funcitons will detect the folder rename and txt movement
@@ -93,12 +87,12 @@ func checkMultiArch(image string) bool {
 	defer filet.Close()
 
 	//check image has been renamed
-	newName := checkRename(image)
-	fmt.Println(newName)
-	if newName != "" {
-		image = newName
-	}
-	file, err := os.Open(image)
+	dockerfile_path := filepath.Join(image, "Dockerfile")
+	image = checkRename(dockerfile_path)
+	fmt.Println(image)
+	new_platform_path := filepath.Join(image, "platforms.txt")
+
+	file, err := os.Open(new_platform_path)
 	if err != nil {
 		return false
 	}
